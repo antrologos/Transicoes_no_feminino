@@ -1,11 +1,6 @@
 #Modelos de painel - cap 3
 
 
-# Diretório ----
-
-wd = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\levelfield"
-
-
 # Pacotes e configurações ----
 options(scipen = 999)
 
@@ -23,7 +18,7 @@ library(modelsummary) # comparar regressões bonitinhas
 
 # 1. Formatando base de dados em painel -----------------------------------
 
-cursos_painel =  read.csv(paste0(wd,"/lf_painel.csv")) 
+cursos_painel =  import(here("../1_Data/processed/lf_painel.fst")) 
 
 #calcular variações com função diff para homens, brancos, n 
 
@@ -118,6 +113,7 @@ feolslinkagem = feols(felinkagemulheres,
 
 modelsummary(models = list(geral = feolslinkage,
                            homem = feolslinkageh, 
-                           mulher =  feolslinkagem), stars = T)
+                           mulher =  feolslinkagem), stars = T,
+                           output = here("../3_Outputs/painel_ef.docx"))
 
 
