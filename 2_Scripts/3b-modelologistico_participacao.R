@@ -2,12 +2,6 @@
 
 # Diretório
 
-# raw, desocupados
-wd = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\censo com desocupados"
-
-#processed, linkages
-wd2 = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\levelfield"
-
 # Pacotes e configuração
 options(scipen = 999) #notação cientifica
 
@@ -32,13 +26,13 @@ library(lattice)
 
 # Abrindo censos e importando dados de linkage por levelfield do indivíduo
 
-c91 = import(paste0(wd, "\\censodesocup1991.fst"))
-c00 = import(paste0(wd, "\\censodesocup2000.fst"))
-c10 = import(paste0(wd, "\\censodesocup2010.fst"))
+c91 = import(here("../1_Data/processed/censodesocup1991.fst"))
+c00 = import(here("../1_Data/processed/censodesocup2000.fst"))
+c10 = import(here("../1_Data/processed/censodesocup2010.fst"))
 
-l80 = import(paste0(wd2, "\\linkage_g1980.xlsx")) %>% select(lf, ls)
-l91 = import(paste0(wd2, "\\linkage_g1991.xlsx"))%>% select(lf, ls)
-l00 = import(paste0(wd2, "\\linkage_g2000.xlsx"))%>% select(lf, ls)
+l80 = import(here("../1_Data/processed/linkage_g1980.xlsx")) %>% select(lf, ls)
+l91 = import(here("../1_Data/processed/linkage_g1991.xlsx"))%>% select(lf, ls)
+l00 = import(here("../1_Data/processed/linkage_g2000.xlsx"))%>% select(lf, ls)
 
 c91 = c91 %>% 
   left_join(l80, by = "lf")                    
@@ -150,7 +144,7 @@ fig1 =
 
 
 ggsave(plot     = fig1,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf12.png",
+       filename = here("../3_Outputs/graf12.png"),
        device = "png", dpi = 600, width = 8, height = 6)
 
 
@@ -220,7 +214,7 @@ fig2 = dados_inventados2 %>%
 
 
 ggsave(plot     = fig2,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf13.png",
+       filename = here("../3_Outputs/graf13.png"),
        device = "png", dpi = 600, width = 8, height = 6)
 
 
@@ -290,7 +284,7 @@ fig3 = dados_inventados3 %>%
 
 
 ggsave(plot     = fig3,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf14.png",
+       filename = here("../3_Outputs/graf14.png"),
        device = "png", dpi = 600, width = 8, height = 6)
 
 
@@ -299,7 +293,7 @@ ggsave(plot     = fig3,
 modelsummary(models = list( "1991" = fit1,
                             "2000" = fit2, 
                             "2010" = fit3), stars = T,
-             output = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\part_modelo_att.docx")
+             output = here("../3_Outputs/part_modelo_att.docx"))
 
 
 
@@ -381,7 +375,7 @@ fig4 = dados_inventados4 %>%
 
 
 ggsave(plot     = fig4,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf15.png",
+       filename = here("../3_Outputs/graf15.png"),
        device = "png", dpi = 600, width = 8, height = 6)
 
 
@@ -389,13 +383,6 @@ ggsave(plot     = fig4,
 fit5 = glm (econActivity ~ ls*sexo + poly(idade, 2)*sexo + raça, family=binomial(link="logit"),
             data = es_c00, weights = peso)
 
-betas = round(coefficients(fit5), digits = 3)
-
-probs = (exp(betas) -1 )*100
-
-beprob = cbind(betas, probs)
-
-export(beprob, "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\beprob2000_es.xlsx" )
 
 gc()
 
@@ -456,7 +443,7 @@ fig5 = dados_inventados5 %>%
 
 
 ggsave(plot     = fig5,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf16.png",
+       filename = here("../3_Outputs/graf16.png"),
        device = "png", dpi = 600, width = 8, height = 6)
 
 
@@ -524,7 +511,7 @@ fig6 = dados_inventados5 %>%
 
 
 ggsave(plot     = fig6,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf17.png",
+       filename = here("../3_Outputs/graf17.png"),
        device = "png", dpi = 600, width = 8, height = 6)
 
 
@@ -534,9 +521,7 @@ ggsave(plot     = fig6,
 modelsummary(models = list( "1991" = fit4,
                             "2000" = fit5, 
                             "2010" = fit6), stars = T,
-             output = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\part_modelo_ES.docx")
-
-fig1 = import("C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf15.png")
+             output = here("../3_Outputs/part_modelo_ES.docx"))
 
 
 p = grid.arrange(fig1, fig2, fig3,  nrow = 1, ncol = 3)
@@ -544,9 +529,9 @@ q = grid.arrange(fig4, fig5, fig6,  nrow = 1, ncol = 3)
 
 
 ggsave(plot     = p,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf18.png",
+       filename = here("../3_Outputs/graf18.png"),
        device = "png", dpi = 600, width = 10, height = 6)
 
 ggsave(plot     = q,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf19.png",
+       filename = here("../3_Outputs/graf19.png"),
        device = "png", dpi = 600, width = 10, height = 6)

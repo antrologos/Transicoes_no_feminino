@@ -1,14 +1,5 @@
 # Capítulo 2 Dissertação (gráficos bonitos)
 
-# Diretório ----
-
-# dados processados - importados de processed 
-wd = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\levelfield"
-
-#outputs
-wd2 = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais"
-
-
 # Pacotes e configuração ----
 
 options(scipen = 999) #notação cientifica
@@ -38,7 +29,7 @@ library(lubridate)
 
 # Caracterizando níveis-área em femininos, masculinos, neutros e separando Ensino básico ----
 
-lf2 = import(paste0(wd4,"/lf_painel.fst")) %>% 
+lf2 = import(here("../1_Data/processed/lf_painel.fst")) %>% 
   filter(is.na(sexo)) %>% 
   mutate(def = case_when(perc_mulheres > 0.6 ~ "Feminino",
                          perc_homens > 0.6 ~ "Masculino",
@@ -64,20 +55,16 @@ def = bind_rows(feminino, masculino, neutro)
 def = def %>% 
   mutate(def = if_else(lf %in% c("1NA", "2NA", "3NA", "4NA"),"Ensino básico", def))
 
-lf = import(paste0(wd4,"/lf_painel.fst")) %>% 
+lf = import(here("../1_Data/processed/lf_painel.fst")) %>%  
   filter(is.na(sexo)) %>% 
   left_join(def, by = "lf")
 
 rm(lf3, lf2, feminino, masculino, neutro)
 
 
+#Labels de level field ----
 
-
-
-
-#Labels de level field (colocar esse arquivo em alguma pasta) ----
-
-lf_labels = import(paste0(wd, "/lf_labels.xlsx")) %>% 
+lf_labels = import(here("lf_labels.xlsx")) %>% 
   mutate(label = factor(label, 
                         levels = c( 'Não foi a escola',
                                     'E. F. incompleto',
@@ -127,7 +114,8 @@ lf_labels = import(paste0(wd, "/lf_labels.xlsx")) %>%
 
 # Gráfico 1 : Participação geral no mercado de trabalho -----
 
-part_geral = import(paste0(wd,"/part_geral.xlsx")) %>% 
+
+part_geral = import(here("../1_Data/processed/part_geral.xlsx")) %>% 
   mutate(partp = (part/100),
          part = round(part, digits = 1))
 
@@ -182,14 +170,13 @@ participacao_geral
 
 
 ggsave(plot     = participacao_geral,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf1.png",
+       filename = here("../3_Outputs/graf1.png"),   # to salvando fora do compartilhado, para cada um gerar o seu 
        device = "png", dpi = 600, width = 5, height = 4)
-
 
 
 # Gráfico 2.1: Participação no mercado de trabalho por nível-área (femininos) -----
 
-part_lf = import(paste0(wd,"/part_lf.xlsx")) %>% 
+part_lf = import(here("../1_Data/processed/part_lf.xlsx")) %>% 
   mutate(partp = (part/100),
          part = round(part, digits = 1))
 
@@ -254,7 +241,7 @@ participacao_lf_fem
 
 
 ggsave(plot     = participacao_lf_fem,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf2-1.png",
+       filename = here("../3_Outputs/graf2-1.png"),
        device = "png", dpi = 600, width = 9, height = 6)
 
 #Gráfico 2.2: Participação no mercado de trabalho por nível-área (masculino) -----
@@ -313,7 +300,7 @@ participacao_lf_mas =
 
 
 ggsave(plot     = participacao_lf_mas,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf2-2.png",
+       filename = here("../3_Outputs/graf2-2.png"),
        device = "png", dpi = 600, width = 9, height = 6)
 
 #Gráfico 2.3: Participação no mercado de trabalho por nível-área (neutro) -----
@@ -371,7 +358,7 @@ participacao_lf_neu =
 
 
 ggsave(plot     = participacao_lf_neu,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf2-3.png",
+       filename = here("../3_Outputs/graf2-3.png"),
        device = "png", dpi = 600, width = 9, height = 6)
 
 
@@ -430,12 +417,12 @@ participacao_lf_bas =
 
 
 ggsave(plot     = participacao_lf_bas,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf2-4.png",
+       filename = here("../3_Outputs/graf2-4.png"),
        device = "png", dpi = 600, width = 8, height = 6)
 
 # Gráfico 3: Medida M geral ----
 
-linkage_geral = import(paste0(wd,"/linkage_tg.xlsx")) %>% 
+linkage_geral = import(here("../1_Data/processed/linkage_tg.xlsx")) %>% 
   filter(stat == "M") %>% 
   mutate(est = round(est, digits = 3))
 
@@ -484,18 +471,17 @@ M_geral
 
 
 ggsave(plot     = M_geral,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf3.png",
+       filename = here("../3_Outputs/graf3.png"),
        device = "png", dpi = 600, width = 6, height = 4)
 
 
 #Gráfico 4 :Medida M por nível-área ----
 
-lf = lf %>% 
-  filter(is.na(sexo)) %>% 
+lf = import(here("../1_Data/processed/lf_painel.fst")) %>%  
+        filter(is.na(sexo)) %>% 
+        left_join(def, by = "lf") %>% 
   mutate(ls = round(ls, digits = 2))
 
-lf = lf %>% 
-  left_join( lf_labels, by = "lf")
 
 # Gráfico 4.1 (femininos)---- 
 linkage_lf_fem = 
@@ -547,7 +533,7 @@ linkage_lf_fem
 
 
 ggsave(plot     = linkage_lf_fem,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf4-1.png",
+       filename = here("../3_Outputs/graf4-1.png"),
        device = "png", dpi = 600, width = 9, height = 6)
 
 
@@ -603,7 +589,7 @@ linkage_lf_mas
 
 
 ggsave(plot     = linkage_lf_mas,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf4-2.png",
+       filename = here("../3_Outputs/graf4-2.png"),
        device = "png", dpi = 600, width = 9, height = 6)
 
 
@@ -657,9 +643,10 @@ linkage_lf_neu
 
 
 ggsave(plot     = linkage_lf_neu,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf4-3.png",
+       filename = here("../3_Outputs/graf4-3.png"),
        device = "png", dpi = 600, width = 9, height = 6)
-# Gráfico 4.3 (basico)---- 
+
+# Gráfico 4.4 (basico)---- 
 linkage_lf_bas = 
   lf %>% 
   filter(def == "Ensino básico") %>% 
@@ -709,12 +696,13 @@ linkage_lf_neu
 
 
 ggsave(plot     = linkage_lf_bas,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf4-4.png",
+       filename = here("../3_Outputs/graf4-4.png"),
        device = "png", dpi = 600, width = 9, height = 6)
 
 # Gráfico 5.1 : Participação no mercado de trabalho por sexo e nível área (femininos) -----
 
-part_lf_sexo = import(paste0(wd,"/part_lfs.xlsx")) %>% 
+
+part_lf_sexo = import(here("../1_Data/processed/part_lfs.xlsx")) %>% 
   mutate(part = round(part, digits = 1),
          sexo = factor(sexo, 
                        labels = c('Mulher', 'Homem')))
@@ -781,7 +769,7 @@ participacao_lf_sexo_fem =
 
 
 ggsave(plot     = participacao_lf_sexo_fem,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf5-1.png",
+       filename = here("../3_Outputs/graf5-1.png"),
        device = "png", dpi = 600, width = 9, height = 7)
 
 # Gráfico 5.2 : Participação no mercado de trabalho por sexo e nível área (masculinos) -----
@@ -842,7 +830,7 @@ participacao_lf_sexo_mas =
 
 
 ggsave(plot     = participacao_lf_sexo_mas,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf5-2.png",
+       filename = here("../3_Outputs/graf5-2.png"),
        device = "png", dpi = 600, width = 9, height = 7)
 
 # Gráfico 5.3 : Participação no mercado de trabalho por sexo e nível área (neutros) -----
@@ -904,7 +892,7 @@ participacao_lf_sexo
 
 
 ggsave(plot     = participacao_lf_sexo_neu,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf5-3.png",
+       filename = here("../3_Outputs/graf5-3.png"),
        device = "png", dpi = 600, width = 9, height = 7)
 # Gráfico 5.3 : Participação no mercado de trabalho por sexo e nível área (basicos) -----
 
@@ -965,14 +953,15 @@ participacao_lf_sexo
 
 
 ggsave(plot     = participacao_lf_sexo_bas,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf5-4.png",
+       filename = here("../3_Outputs/graf5-4.png"),
        device = "png", dpi = 600, width = 8, height = 6)
 
 
 # Gráfico 6 : Medida M por sexo ----
 
-linkage_tf = import(paste0(wd,"/linkage_tf.xlsx"))
-linkage_tm = import(paste0(wd,"/linkage_tm.xlsx"))
+
+linkage_tf = import(here("../1_Data/processed/linkage_tf.xlsx"))
+linkage_tm = import(here("../1_Data/processed/linkage_tm.xlsx"))
 
 linkage_tf$sexo = 0
 linkage_tm$sexo = 1  
@@ -1030,15 +1019,15 @@ M_geral_sexo
 
 
 ggsave(plot     = M_geral_sexo,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf6.png",
+       filename = here("../3_Outputs/graf6.png"),
        device = "png", dpi = 600, width = 5, height = 4)
 
 
 
 # Gráfico 7 .1: Medida M por nível-área e sexo (femininos) ----
 
-linkage_f = import(paste0(wd,"/linkage_f.xlsx"))
-linkage_m = import(paste0(wd,"/linkage_m.xlsx"))
+linkage_f = import(here("../1_Data/processed/linkage_f.xlsx"))
+linkage_m = import(here("../1_Data/processed/linkage_m.xlsx"))
 
 linkage_f$sexo = 0
 linkage_m$sexo = 1  
@@ -1103,7 +1092,7 @@ M_sexo_area_fem =
 
 
 ggsave(plot     = M_sexo_area_fem,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf7-1.png",
+       filename = here("../3_Outputs/graf7.png"),
        device = "png", dpi = 600, width = 9, height = 6)
 
 # Gráfico 7 .2: Medida M por nível-área e sexo (masculinos) -----
@@ -1159,8 +1148,10 @@ M_sexo_area_mas =
 
 
 ggsave(plot     = M_sexo_area_mas,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf7-2.png",
+       filename = here("../3_Outputs/graf7-2.png"),
        device = "png", dpi = 600, width = 9, height = 6)
+
+
 # Gráfico 7.3 : Medida M por nível-área e sexo (neutros) -----
 M_sexo_area_neu = 
   linkage %>% 
@@ -1211,7 +1202,7 @@ M_sexo_area_neu =
 
 
 ggsave(plot     = M_sexo_area_neu,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf7-3.png",
+       filename = here("../3_Outputs/graf7-3.png"),
        device = "png", dpi = 600, width = 9, height = 6)
 
 
@@ -1265,7 +1256,7 @@ M_sexo_area_bas =
 
 
 ggsave(plot     = M_sexo_area_bas,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf7-4.png",
+       filename = here("../3_Outputs/graf7-4.png"),
        device = "png", dpi = 600, width = 8, height = 6)
 
 
@@ -1276,8 +1267,8 @@ ggsave(plot     = M_sexo_area_bas,
 
 
 
-linkage_f = import(paste0(wd,"/linkage_f.xlsx"))
-linkage_m = import(paste0(wd,"/linkage_m.xlsx"))
+linkage_f = import(here("../1_Data/processed/linkage_f.xlsx"))
+linkage_m = import(here("../1_Data/processed/linkage_m.xlsx"))
 
 # linkage_f$sexo = 0
 # linkage_m$sexo = 1  
@@ -1332,14 +1323,14 @@ cor_ls
 
 
 ggsave(plot     = cor_ls,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf8.png",
+       filename = here("../3_Outputs/graf8.png"),
        device = "png", dpi = 600, width = 6, height = 5)
 
 
 
 # Gráfico 9 : Relação entre tamanho e ligação geral ----
 
-lf = import(paste0(wd,"/lf_painel.fst")) %>% 
+lf = lf = import(here("../1_Data/processed/lf_painel.fst")) %>% 
   filter(is.na(sexo)) 
 
 tamanho_ls = lf %>% 
@@ -1378,7 +1369,7 @@ tamanho_ls
 
 
 ggsave(plot     = tamanho_ls,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf9.png",
+       filename = here("../3_Outputs/graf9.png"),
        device = "png", dpi = 600, width = 6, height = 5)
 
 
@@ -1421,17 +1412,17 @@ percentual_ls
 
 
 ggsave(plot     = percentual_ls,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf10.png",
+       filename = here("../3_Outputs/graf10.png"),
        device = "png", dpi = 600, width = 6, height = 5)
 
 
 
 # Gráfico 11: Relação entre participação e ls ----
 
-lf = import(paste0(wd,"/lf_painel.fst")) %>% 
+lf = import(here("../1_Data/processed/lf_painel.fst")) %>% 
   filter(is.na(sexo)) 
 
-part = import(paste0(wd3,"/part_lf.xlsx")) %>%   # conferir nome
+part = import(here("../1_Data/processed/part_lf.xlsx")) %>%   
   filter(sexo == 1) 
 
 lf = lf %>% 
@@ -1474,7 +1465,7 @@ part_ls
 
 
 ggsave(plot     = part_ls,
-       filename = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data\\arquivos finais\\graf11.png",
+       filename = here("../3_Outputs/graf11.png"),
        device = "png", dpi = 600, width = 6, height = 5)
 
 

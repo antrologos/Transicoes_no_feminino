@@ -1,10 +1,5 @@
 ## Decomposição linkage
 
-# Diretório ---- 
-
-#raw, censos com ocupados
-wd = "C:\\Users\\demed\\Dropbox\\PC\\Documents\\Carol\\Dissertação\\Pesquisa\\Dissertacao_CarolinaMedeiros\\1_Data"
-
 #Pacotes e configuração -----
 
 options(scipen = 999) #notação cientifica
@@ -18,197 +13,16 @@ library(weights)
 library(Hmisc) #medias ponderadas
 
 
-# Abrindo censos com ocupados originais e selecionando variáveis ---- 
-# Fiquei com preguiça de fazer loop, mas deve ser mais eficiente
+# Abrindo censos processados ---- 
 
-c80 = import(paste0(wd, "\\harmonizedCensusBrazil_1980.fst"))
-c91 = import(paste0(wd, "\\harmonizedCensusBrazil_1991.fst"))
-c00 = import(paste0(wd, "\\harmonizedCensusBrazil_2000.fst"))
-c10 = import(paste0(wd, "\\harmonizedCensusBrazil_2010.fst"))
+
+c80 = import(here("../1_Data/processed/censo1980.fst"))
+c91 = import(here("../1_Data/processed/censo1991.fst"))
+c00 = import(here("../1_Data/processed/censo2000.fst"))
+c10 = import(here("../1_Data/processed/censo2010.fst"))
+
 
 gc()
-
-# 1980
-c80 <- c80 %>%
-  select(year,
-         wgtperson,
-         male,
-         race, 
-         age, 
-         stateMinimumComparable,
-         regionMinimumComparable,
-         educationAttainment,
-         fieldsOfStudy,
-         occupationalStatus, 
-         econActivity,
-         classWorker, 
-         isco88,
-         MainJobIncome2010Values) %>% 
-  rename ("ano" = year,
-          "peso" = wgtperson,
-          "sexo" = male, 
-          "raça" = race, 
-          "idade" = age, 
-          "estado" = stateMinimumComparable,
-          "região" = regionMinimumComparable,
-          "educ" = educationAttainment,
-          "areadeestudo" = fieldsOfStudy,
-          "status_ocup" = occupationalStatus, 
-          "ocupacao" = isco88,
-          "renda_trab" = MainJobIncome2010Values) %>% 
-  filter(idade >= 18,
-         idade <= 65) %>%  # conferir isso depois
-  mutate(ocupacao = as.numeric(ocupacao),
-         ocup3dig = trunc(ocupacao/10),
-         ocup2dig =  trunc(ocupacao/100),
-         ocup1dig = trunc(ocupacao/1000),
-         educ = case_when( educ == 1 ~ 1
-                           ,educ == 2 ~ 2
-                           ,educ == 3 ~ 2
-                           ,educ == 4 ~ 2
-                           ,educ == 5 ~ 3
-                           ,educ == 6 ~ 3
-                           ,educ == 7 ~ 4
-                           ,educ == 8 ~ 4
-                           ,educ == 9 ~ 5
-                           ,educ == 99 ~ 9),
-         lf = paste0(educ,areadeestudo))
-#1991
-c91 <- c91 %>%
-  select(year,
-         wgtperson,
-         male,
-         race, 
-         age, 
-         stateMinimumComparable,
-         regionMinimumComparable,
-         educationAttainment,
-         fieldsOfStudy,
-         occupationalStatus, 
-         econActivity,
-         classWorker, 
-         isco88,
-         MainJobIncome2010Values) %>% 
-  rename ("ano" = year,
-          "peso" = wgtperson,
-          "sexo" = male, 
-          "raça" = race, 
-          "idade" = age, 
-          "estado" = stateMinimumComparable,
-          "região" = regionMinimumComparable,
-          "educ" = educationAttainment,
-          "areadeestudo" = fieldsOfStudy,
-          "status_ocup" = occupationalStatus, 
-          "ocupacao" = isco88,
-          "renda_trab" = MainJobIncome2010Values) %>% 
-  filter(idade >= 18,
-         idade <= 65) %>%  # conferir isso depois
-  mutate(ocupacao = as.numeric(ocupacao),
-         ocup3dig = trunc(ocupacao/10),
-         ocup2dig =  trunc(ocupacao/100),
-         ocup1dig = trunc(ocupacao/1000),
-         educ = case_when( educ == 1 ~ 1
-                           ,educ == 2 ~ 2
-                           ,educ == 3 ~ 2
-                           ,educ == 4 ~ 2
-                           ,educ == 5 ~ 3
-                           ,educ == 6 ~ 3
-                           ,educ == 7 ~ 4
-                           ,educ == 8 ~ 4
-                           ,educ == 9 ~ 5
-                           ,educ == 99 ~ 9),
-         lf = paste0(educ,areadeestudo))
-#2000
-c00 <- c00 %>%
-  select(year,
-         wgtperson,
-         male,
-         race, 
-         age, 
-         stateMinimumComparable,
-         regionMinimumComparable,
-         educationAttainment,
-         fieldsOfStudy,
-         occupationalStatus, 
-         econActivity,
-         classWorker, 
-         isco88,
-         MainJobIncome2010Values) %>% 
-  rename ("ano" = year,
-          "peso" = wgtperson,
-          "sexo" = male, 
-          "raça" = race, 
-          "idade" = age, 
-          "estado" = stateMinimumComparable,
-          "região" = regionMinimumComparable,
-          "educ" = educationAttainment,
-          "areadeestudo" = fieldsOfStudy,
-          "status_ocup" = occupationalStatus, 
-          "ocupacao" = isco88,
-          "renda_trab" = MainJobIncome2010Values) %>% 
-  filter(idade >= 18,
-         idade <= 65) %>%  # conferir isso depois
-  mutate(ocupacao = as.numeric(ocupacao),
-         ocup3dig = trunc(ocupacao/10),
-         ocup2dig =  trunc(ocupacao/100),
-         ocup1dig = trunc(ocupacao/1000),
-         educ = case_when( educ == 1 ~ 1
-                           ,educ == 2 ~ 2
-                           ,educ == 3 ~ 2
-                           ,educ == 4 ~ 2
-                           ,educ == 5 ~ 3
-                           ,educ == 6 ~ 3
-                           ,educ == 7 ~ 4
-                           ,educ == 8 ~ 4
-                           ,educ == 9 ~ 5
-                           ,educ == 99 ~ 9),
-         lf = paste0(educ,areadeestudo))
-
-#2010
-c10 <- c10 %>%
-  select(year,
-         wgtperson,
-         male,
-         race, 
-         age, 
-         stateMinimumComparable,
-         regionMinimumComparable,
-         educationAttainment,
-         fieldsOfStudy,
-         occupationalStatus, 
-         econActivity,
-         classWorker, 
-         isco88,
-         MainJobIncome2010Values) %>% 
-  rename ("ano" = year,
-          "peso" = wgtperson,
-          "sexo" = male, 
-          "raça" = race, 
-          "idade" = age, 
-          "estado" = stateMinimumComparable,
-          "região" = regionMinimumComparable,
-          "educ" = educationAttainment,
-          "areadeestudo" = fieldsOfStudy,
-          "status_ocup" = occupationalStatus, 
-          "ocupacao" = isco88,
-          "renda_trab" = MainJobIncome2010Values) %>% 
-  filter(idade >= 18,
-         idade <= 65) %>%  # conferir isso depois
-  mutate(ocupacao = as.numeric(ocupacao),
-         ocup3dig = trunc(ocupacao/10),
-         ocup2dig =  trunc(ocupacao/100),
-         ocup1dig = trunc(ocupacao/1000),
-         educ = case_when( educ == 1 ~ 1
-                           ,educ == 2 ~ 2
-                           ,educ == 3 ~ 2
-                           ,educ == 4 ~ 2
-                           ,educ == 5 ~ 3
-                           ,educ == 6 ~ 3
-                           ,educ == 7 ~ 4
-                           ,educ == 8 ~ 4
-                           ,educ == 9 ~ 5
-                           ,educ == 99 ~ 9),
-         lf = paste0(educ,areadeestudo))
 
 
 
