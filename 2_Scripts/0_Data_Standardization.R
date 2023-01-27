@@ -1,7 +1,11 @@
-# Script for data preparation
+# Script for data preparation:
+# 1) Recodes and filters microdata (and saves yearly and stacked datasets)
+# 2) Produces a level-field aggregated and stacked dataset
+
 # Authors: Carolina Medeiros, Rogerio Barbosa, Flavio Carvalhaes
 
-# Packages ---------------------------------------------------------------------
+
+# 0. Packages and Setup ---------------------------------------------------------------------
 
 library(rio)
 library(tidyverse)
@@ -9,12 +13,6 @@ library(tidylog)
 library(segregation)
 library(Hmisc)
 library(here)
-
-#library(weights)
-#library(data.table)
-#library(questionr) # wtd.table 
-
-# 0. Setup ---------------------------------------------------------------------
 
 #rm(list = ls());gc()
 options(scipen = 999)
@@ -24,12 +22,12 @@ processed_data_wd = "../1_Data/processed/"
 
 if(dir.exists(processed_data_wd)){
         unlink(here(processed_data_wd), recursive = T, force = T, expand = T)
+        dir.create(processed_data_wd)
 }else{
         dir.create(processed_data_wd)
 }
 
 anos <- c(1980,1991,2000,2010)
-
 
 # 1. Processing Microdata ------------------------------------------------------
 
@@ -213,6 +211,8 @@ descriptives <- bind_rows(
                 rename(year = ano)
         )
 
+gc() 
+
 ## 3.5 - Gathering all the aggregate datasets
 
 d <- localLinkage_all %>%
@@ -222,4 +222,4 @@ d <- localLinkage_all %>%
 export(d, here(processed_data_wd, "data_levelfields_by_gender.fst"))
 
 
-
+gc() 
