@@ -27,19 +27,23 @@ if(dir.exists(processed_data_wd)){
         dir.create(processed_data_wd)
 }
 
-anos <- c(1980,1991,2000,2010)
+years <- c(1980,1991,2000,2010)
+
+isced_labels <- import(here("1_Auxiliary_Data", "isced3_labels.xlsx")) %>%
+        select(fieldsOfStudy = isced_level3, 
+               isced_labels  = isced_level3_label_en)
 
 # 1. Processing Microdata ------------------------------------------------------
 
 #i = 1
 stacked_census = tibble()
-for (i in 1: length(anos)){
+for (i in 1: length(years)){
         
-        ano_i = anos[i]
-        print(ano_i)
+        year_i = years[i]
+        print(year_i)
         
-        file_to_open_i = paste0("Census_", ano_i, "_Harmonized_AllVariables.fst", sep = "")
-        file_to_save_i = paste0("CensusProcessed_", ano_i, "_18-65y.fst", sep = "")
+        file_to_open_i = paste0("Census_", year_i, "_Harmonized_AllVariables.fst", sep = "")
+        file_to_save_i = paste0("CensusProcessed_", year_i, "_18-65y.fst", sep = "")
         
         ## 1.1 - Opening file ----
         print("--- Opening file")
@@ -63,42 +67,52 @@ for (i in 1: length(anos)){
                                "MainJobIncome2010Values")
                    )
         
-        gc() 
+        gc()
                 
         ## 1.2 - Recoding ----
         print("--- Recoding")
         c <- c %>%
-                rename ("ano" = year,
-                        "peso" = wgtperson,
-                        "sexo" = male, 
-                        "raca" = race, 
-                        "idade" = age, 
-                        "estado" = stateMinimumComparable,
-                        "regiao" = regionMinimumComparable,
-                        "educ" = educationAttainment,
-                        "areadeestudo" = fieldsOfStudy,
-                        "status_ocup" = occupationalStatus, 
-                        "classe_trab" = classWorker, 
-                        "ocupacao" = isco88,
-                        "renda_trab" = MainJobIncome2010Values) %>% 
-                filter(idade >= 18,
-                       idade <= 65) %>%
-                mutate(ocupacao = as.numeric(ocupacao),
-                       ocup3dig = trunc(ocupacao/10),
-                       ocup2dig = trunc(ocupacao/100),
-                       ocup1dig = trunc(ocupacao/1000),
-                       educ     = case_when(educ == 1 ~ 1,
-                                            educ == 2 ~ 2,
-                                            educ == 3 ~ 2,
-                                            educ == 4 ~ 2,
-                                            educ == 5 ~ 3,
-                                            educ == 6 ~ 3,
-                                            educ == 7 ~ 4,
-                                            educ == 8 ~ 4,
-                                            educ == 9 ~ 5,
-                                            educ == 99 ~ 9),
+                rename(wgt      = wgtperson,
+                       state    = stateMinimumComparable,
+                       region   = regionMinimumComparable,
+                       educ     = educationAttainment,
+                       gender   = male,
+                       earnings = MainJobIncome2010Values) %>%
+                
+                filter(age >= 18,
+                       age <= 65) %>%
+                
+                left_join(isced_labels) %>%
+        
+                mutate(isco88 = as.numeric(isco88),
+                       ocup3dig = trunc(isco88/10),
+                       ocup2dig = trunc(isco88/100),
+                       ocup1dig = trunc(isco88/1000),
                        
-                       lf       = paste0(educ,areadeestudo))
+                       gender = ifelse(gender == 0, "Female", "Male"),
+                       
+                       race = case_when(race %in% 1 ~ "White",
+                                        race %in% 2 ~ "Mixed Race",
+                                        race %in% 3 ~ "Black",
+                                        TRUE ~ NA_character_),
+                       
+                       educ_aggreg = case_when(educ %in% 1  ~ "1. None",         # 1. None
+                                               educ %in% 2  ~ "1. None",         # 2. Primary Incomplete
+                                               educ %in% 3  ~ "2. Primary",      # 3. Primary Complete
+                                               educ %in% 4  ~ "2. Primary",      # 4. Mid School Incomplete
+                                               educ %in% 5  ~ "3. Mid School",   # 5. Mid School Complete
+                                               educ %in% 6  ~ "3. Mid School",   # 6. High School Incomplete
+                                               educ %in% 7  ~ "4. High School",  # 7. High School Complete
+                                               educ %in% 8  ~ "4. High School",  # 8. Higher Ed. Incomplete
+                                               educ %in% 9  ~ "5. Higher Ed.",   # 9. Higher Ed. Complete
+                                               educ %in% 99 ~ NA_character_),    #99. Other levels or unknown
+                       
+                       lf       = paste(educ_aggreg, 
+                                        isced_labels,
+                                        sep = " - "),
+                       
+                       lf       = str_remove(lf, " - NA"))
+        
         
         ## 1.3 - Saving the processed file ----
         print("--- Saving the processed file")
@@ -113,7 +127,7 @@ for (i in 1: length(anos)){
         rm(c); gc()
         
 }
- 
+
 gc();Sys.sleep(1);gc()
 
 # 2. Saving the stacked data ---------------------------------------------------
@@ -127,14 +141,14 @@ gc();Sys.sleep(1);gc()
 ## 3.1 - Calculating local linkage by gender, all years ----
 
 localLinkage_all = 
-        map_dfr(anos, 
-            .f = function(ano_i){
-                    print(ano_i)
+        map_dfr(years, 
+            .f = function(year_i){
+                    print(year_i)
                     
                     gc() 
                     
-                    gender_number = list(c(0,1), c(0), c(1))
-                    gender_label  = list("all", "female", "male")
+                    gender_cat   = list(c("Female", "Male"), "Female", "Male")
+                    gender_label = list("All", "Female", "Male")
                     
                     map_dfr(.x = 1:3,
                             function(j){
@@ -143,15 +157,15 @@ localLinkage_all =
                                     gc() 
                                     
                                     stacked_census %>%
-                                            filter(!is.na(ocupacao),
+                                            filter(!is.na(isco88),
                                                    !is.na(lf),
-                                                   ano == ano_i,
-                                                   sexo %in% unlist(gender_number[j])) %>%
+                                                   year == year_i,
+                                                   gender %in% unlist(gender_cat[j])) %>%
                                             mutual_local(group = "ocup3dig",
                                                          unit = "lf",
-                                                         weight = "peso", 
+                                                         weight = "wgt", 
                                                          wide = T) %>%
-                                            mutate(year   = ano_i,
+                                            mutate(year   = year_i,
                                                    gender = gender_label[j])
                             })
             })
@@ -161,62 +175,51 @@ localLinkage_all <- tibble(localLinkage_all) %>% unnest(cols = gender)
 gc();Sys.sleep(1);gc()
         
 
-## 3.2 - Labor market participation by level-fields, gender, all years -------- 
-
-participation = bind_rows(stacked_census %>%
-                                  group_by(ano, lf) %>%
-                                  summarise(part = wtd.mean(econActivity, peso)*100) %>%
-                                  mutate(gender = "all") %>%
-                                  ungroup() %>%
-                                  rename(year = ano),
-                          
-                          stacked_census %>%
-                                  mutate(gender = ifelse(sexo == 1, "male", "female")) %>%
-                                  group_by(ano, lf, gender) %>%
-                                  summarise(part = wtd.mean(econActivity, peso)*100) %>%
-                                  ungroup() %>%
-                                  rename(year = ano))
-
-
-        
-## 3.3 - Descriptives by level-field, by gender, all years ----
+## 3.2 - Descriptives by level-field, by gender, all years ----
         
 descriptives <- bind_rows(
         stacked_census %>% 
-                group_by(ano, lf) %>% 
-                summarise(n = sum(peso),
-                          perc_homens   = wtd.mean(sexo, peso),
-                          perc_mulheres = wtd.mean(sexo == 0, peso),
-                          perc_brancos  = wtd.mean(raca == 1, peso),
-                          perc_negros   = wtd.mean(raca == 3, peso),
-                          renda_media   = wtd.mean(renda_trab, peso),
-                          renda_var     = wtd.var(renda_trab, peso),
-                          idade_media   = wtd.mean(idade, peso)) %>%
+                mutate(log_earnings = log(earnings),
+                       log_earnings = ifelse(!is.finite(log_earnings), NA_real_, log_earnings),
+                       log_earnings = ifelse(is.nan(log_earnings),     NA_real_, log_earnings)) %>%
+                group_by(year, lf) %>% 
+                summarise(n = sum(wgt),
+                          perc_women      = wtd.mean(gender %in% "Female", wgt),
+                          perc_men        = wtd.mean(gender %in% "Male", wgt),
+                          perc_white      = wtd.mean(race %in% "White", wgt),
+                          perc_nonWhite   = wtd.mean(!(race %in% "White"), wgt), # havia um erro aqui
+                          perc_laborMarket = wtd.mean(econActivity, wgt),
+                          perc_occupied    = wtd.mean(occupationalStatus, wgt),
+                          mean_earnings   = wtd.mean(earnings, wgt),
+                          logVar_earnings = wtd.var(log_earnings, wgt),
+                          mean_age        = wtd.mean(age, wgt)) %>%
                 ungroup() %>%
-                mutate(gender = "all") %>%
-                rename(year = ano),
+                mutate(gender = "All") %>%
+                rename(year = year),
         
         stacked_census %>% 
-                mutate(gender = ifelse(sexo == 1, "male", "female")) %>%
-                group_by(ano, lf, gender) %>% 
-                summarise(n = sum(peso),
-                          perc_homens   = NA_real_,
-                          perc_mulheres = NA_real_,
-                          perc_brancos  = wtd.mean(raca == 1, peso),
-                          perc_negros   = wtd.mean(raca == 3, peso),
-                          renda_media   = wtd.mean(renda_trab, peso),
-                          renda_var     = wtd.var(renda_trab, peso),
-                          idade_media   = wtd.mean(idade, peso)) %>%
+                mutate(log_earnings = log(earnings),
+                       log_earnings = ifelse(!is.finite(log_earnings), NA_real_, log_earnings),
+                       log_earnings = ifelse(is.nan(log_earnings),     NA_real_, log_earnings)) %>%
+                group_by(year, lf, gender) %>% 
+                summarise(n = sum(wgt),
+                          perc_women       = NA_real_,
+                          perc_men         = NA_real_,
+                          perc_white       = wtd.mean(race %in% "White", wgt),
+                          perc_nonWhite    = wtd.mean(!(race %in% "White"), wgt), # havia um erro aqui
+                          perc_laborMarket = wtd.mean(econActivity, wgt),
+                          perc_occupied    = wtd.mean(occupationalStatus, wgt),
+                          mean_earnings    = wtd.mean(earnings, wgt),
+                          logVar_earnings = wtd.var(log_earnings, wgt),
+                          mean_age         = wtd.mean(age, wgt)) %>%
                 ungroup() %>%
-                rename(year = ano)
-        )
+                rename(year = year))
 
 gc() 
 
-## 3.5 - Gathering all the aggregate datasets
+## 3.3 - Gathering all the aggregate datasets ----
 
 d <- localLinkage_all %>%
-        left_join(participation, by = c("year", "gender", "lf")) %>%
         left_join(descriptives, by = c("year", "gender", "lf"))
 
 export(d, here(processed_data_wd, "data_levelfields_by_gender.fst"))
